@@ -1,3 +1,3 @@
-Detectando-na-agua
+# Detectando-na-agua
 
-Esse projeto tem como objetivo determinar se um recipiente com água contem sal ou açúcar
+Esse projeto tem como objetivo determinar se um recipiente com água contem sal e/ou açúcar
