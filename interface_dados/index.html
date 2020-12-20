@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <meta charset="utf-8" />
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Welcome to Firebase Hosting</title>
+
+    <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+  </head>
+  <body>
+    <h1>ola mundo</h1>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyDIaOpxMeNXLAZOS8nOYpdEUYhcTwLayC0",
+        authDomain: "detectando-na-agua1.firebaseapp.com",
+        databaseURL: "https://detectando-na-agua1-default-rtdb.firebaseio.com",
+        projectId: "detectando-na-agua1",
+        storageBucket: "detectando-na-agua1.appspot.com",
+        messagingSenderId: "665441693882",
+        appId: "1:665441693882:web:f4a523216afe48fd3e9283",
+        measurementId: "G-0NB4FVB0DQ"
+      };
+      firebase.initializeApp(firebaseConfig);
+
+      var db = firebase.database();
+    </script>
+  </body>
+</html>
