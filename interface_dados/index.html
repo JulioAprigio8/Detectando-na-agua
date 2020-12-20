@@ -3,16 +3,20 @@
   <meta charset="utf-8" />
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Welcome to Firebase Hosting</title>
+    <title>Detectando na Água</title>
 
     <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="styles.css" />
   </head>
   <body>
-    <h1>ola mundo</h1>
+    <h2>Gráficos de condutividade</h2>
+    <div id="chart" class="container"></div>
+    <div id="splice" class="container"></div>
+
     <script>
-      const firebaseConfig = {
+      let chart;
+      const firebaseConfig = {//credenciais do Firebase
         apiKey: "AIzaSyDIaOpxMeNXLAZOS8nOYpdEUYhcTwLayC0",
         authDomain: "detectando-na-agua1.firebaseapp.com",
         databaseURL: "https://detectando-na-agua1-default-rtdb.firebaseio.com",
@@ -22,9 +26,60 @@
         appId: "1:665441693882:web:f4a523216afe48fd3e9283",
         measurementId: "G-0NB4FVB0DQ"
       };
-      firebase.initializeApp(firebaseConfig);
+      firebase.initializeApp(firebaseConfig);//configura as credenciais do banco de dados
 
-      var db = firebase.database();
+      var db = firebase.database(); //inicializa o banco de dados
+
+      window.addEventListener('load', function () {
+        chart = new Highcharts.Chart({
+        //Estrutura responsavel por determinar os dados do gráfico
+        chart: { renderTo: "chart" },
+        title: { text: "Gráfico 01" },
+        events: {
+          load: requestFB()
+        },
+        series: [
+          {
+            color: "#059e8a",
+            showInLegend: true,
+            name: 'Umidade do Solo',
+            data: [0, 1]//parte responsavel por plotar pontos(manualmente)dos dados
+          },
+          {
+            color: "#9B111E",
+            showInLegend:true,
+            name: 'Temperatura do Ar',
+            data: [0,1]
+          }
+        ],
+        plotOptions: {
+          line: {
+            animation: true,
+            dataLabels: { enabled: true }
+          },
+        },
+        xAxis: {
+          type: 'datetime',
+          dateTimeLabelFormats: { second: "%H:%M:%S" }
+        },
+        yAxis: {
+          title: { text: "Umidade(%) e Temperatura(°C)" },
+        },
+        credits: { enabled: false }
+      })
+
+      async function requestFB() {
+      db.ref("teste/solo").limitToLast(1).on("value", snapshot => {
+        var EIXO_X = new Date();
+        snapshot.forEach(childSnapshot => {
+          if (chart.series[0].data.length > 10) {//exibe 10 pontos na area do grafico
+            chart.series[0].addPoint([EIXO_X, childSnapshot.val()], true, true);
+          } else {
+            chart.series[0].addPoint([EIXO_X, childSnapshot.val()], true, false)//apaga o ponto mais antigo do gráfico
+          }
+        });
+      })
+      }
     </script>
   </body>
 </html>
