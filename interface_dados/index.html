@@ -2,9 +2,12 @@
 <html lang="pt-br">
   <meta charset="utf-8" />
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />  
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Detectando na Água</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    />
     <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="style.css" />
@@ -14,23 +17,28 @@
     <div id="chart" class="container"></div>
     <div id="spline" class="container"></div>
     <div id="tabela">
-        <table>
-          <tr>
-            <th>valor 1</th>
-            <th>valor 2</th>
-            <th>valor 3</th>
-            <th>Data</th>
-            <th>Horario</th>
-          </tr>
-          <tr>
-            <td>dado1</td>
-            <td>dado2</td>
-            <td>dado3</td>
-            <td><span id="data"></span></td>
-            <td><span id="horario"></span></td>
-          </tr>
-        </table>
-    
+      <table>
+        <tr>
+          <th>valor 1</th>
+          <th>valor 2</th>
+          <th>valor 3</th>
+          <th>Data</th>
+          <th>Horario</th>
+        </tr>
+        <tr>
+          <td>dado1</td>
+          <td>dado2</td>
+          <td>dado3</td>
+          <td>
+            <span id="data1"></span><span id="data2"></span
+            ><span id="data3"></span>
+          </td>
+          <td>
+            <span id="horario1"></span><span id="horario2"></span
+            ><span id="horario3"></span>
+          </td>
+        </tr>
+      </table>
     </div>
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
@@ -58,7 +66,14 @@
       window.addEventListener("load", function() {
         chart = new Highcharts.Chart({
           //Estrutura responsavel por determinar os dados do gráfico
-          chart: { renderTo: "chart" },
+          chart: {
+            type: "spline",
+            renderTo: "chart",
+            scrollablePlotArea: {
+              minWidth: 600,
+              scrollPositionX: 1
+            }
+          },
           title: { text: "Gráfico 01" },
           events: {
             load: requestFB()
@@ -78,7 +93,13 @@
             }
           ],
           plotOptions: {
-            line: {
+            spline: {
+              lineWidth: 4,
+              states: {
+                hover: {
+                  lineWidth: 5
+                }
+              },
               animation: true,
               dataLabels: { enabled: true }
             }
@@ -95,7 +116,7 @@
         spline = new Highcharts.Chart({
           //Estrutura responsavel por determinar os dados do gráfico
           chart: {
-            type: 'spline',
+            type: "spline",
             renderTo: "spline",
             scrollablePlotArea: {
               minWidth: 600,
@@ -104,35 +125,32 @@
           },
           title: { text: "Gráfico 02" },
           events: {
-            load: requestFB()
+            load: requestFB1()
           },
           series: [
             {
               color: "#059e8a",
               showInLegend: true,
               name: "Umidade do Solo",
-              data: [ 3.7, 3.3, 3.9, 5.1, 3.5, 3.8, 4.0, 5.0, 6.1, 3.7, 3.3, 6.4,
-            6.9, 6.0] //parte responsavel por plotar pontos(manualmente)dos dados
+              data: [0, 1] //parte responsavel por plotar pontos(manualmente)dos dados
             },
             {
               color: "#9B111E",
               showInLegend: true,
               name: "Temperatura do Ar",
-              data: [0.2, 0.1, 0.1, 0.1, 0.3, 0.2, 0.3, 0.1, 0.7, 0.3, 0.2, 0.2,
-            0.3, 0.1, 0.3]
+              data: [0, 1]
             }
           ],
           plotOptions: {
             spline: {
               lineWidth: 4,
-              states:{
-                hover:{
+              states: {
+                hover: {
                   lineWidth: 5
                 }
               },
               animation: true,
-              dataLabels: { enabled: true },
-              
+              dataLabels: { enabled: true }
             }
           },
           xAxis: {
@@ -146,45 +164,161 @@
             title: { text: "Umidade(%) e Temperatura(°C)" },
             minorGridLineWidth: 0,
             gridLineWidth: 0,
-            alternateGridColor: null,
+            alternateGridColor: null
           },
           credits: { enabled: false }
         });
-        async function data_hora(){
-          var dia,mes,ano,hora,minuto,segundo;
-          
-          dia = db.ref("time/dia");
-          mes = db.ref("time/mes");
-          ano = db.ref("time/ano");
-          hora = db.ref("time/hora");
-          minuto = db.ref("time/minuto");
-          segundo = db.ref("time/segundo");
-          
-          dia.on('value',function(snapshot){
-            document.getElementById('data').innerText = snapshot.val() + "/";
-          },function(errorObject){
-            alert("The read failed:"+errorObject.code);
-          });
-          mes.on('value',function(snapshot){
-            document.getElementById('data').innerText = snapshot.val() + "/";
-          },function(errorObject){
-            alert("The read failed:"+errorObject.code);
-          });
-          ano.on('value',function(snapshot){
-            document.getElementById('data').innerText = snapshot.val();
-          },function(errorObject){
-            alert("The read failed:"+errorObject.code);
-          }); 
-        }
+
+        var dia, mes, ano, hora, minuto, segundo;
+
+        dia = db.ref("time/dia");
+        mes = db.ref("time/mes");
+        ano = db.ref("time/ano");
+        hora = db.ref("time/hora");
+        minuto = db.ref("time/minuto");
+        segundo = db.ref("time/segundo");
+
+        dia.on(
+          "value",
+          function(snapshot) {
+            document.getElementById("data1").innerText = snapshot.val() + "/";
+          },
+          function(errorObject) {
+            alert("The read failed:" + errorObject.code);
+          }
+        );
+        mes.on(
+          "value",
+          function(snapshot) {
+            document.getElementById("data2").innerText = snapshot.val() + "/";
+          },
+          function(errorObject) {
+            alert("The read failed:" + errorObject.code);
+          }
+        );
+        ano.on(
+          "value",
+          function(snapshot) {
+            document.getElementById("data3").innerText = snapshot.val();
+          },
+          function(errorObject) {
+            alert("The read failed:" + errorObject.code);
+          }
+        );
+        hora.on(
+          "value",
+          function(snapshot) {
+            document.getElementById("horario1").innerText =
+              snapshot.val() + ":";
+          },
+          function(errorObject) {
+            alert("The read failed:" + errorObject.code);
+          }
+        );
+        minuto.on(
+          "value",
+          function(snapshot) {
+            document.getElementById("horario2").innerText =
+              snapshot.val() + ":";
+          },
+          function(errorObject) {
+            alert("The read failed:" + errorObject.code);
+          }
+        );
+        segundo.on(
+          "value",
+          function(snapshot) {
+            document.getElementById("horario3").innerText = snapshot.val();
+          },
+          function(errorObject) {
+            alert("The read failed:" + errorObject.code);
+          }
+        );
+
         async function requestFB() {
-          db.ref("teste/solo").limitToLast(1).on("value", snapshot => {
+          db.ref("teste/solo")
+            .limitToLast(1)
+            .on("value", snapshot => {
               var EIXO_X = new Date();
               snapshot.forEach(childSnapshot => {
                 if (chart.series[0].data.length > 25) {
                   //exibe 10 pontos na area do grafico
-                  chart.series[0].addPoint([EIXO_X, childSnapshot.val()],true,true);
+                  chart.series[0].addPoint(
+                    [EIXO_X, childSnapshot.val()],
+                    true,
+                    true
+                  );
                 } else {
-                  chart.series[0].addPoint([EIXO_X, childSnapshot.val()],true,false); //apaga o ponto mais antigo do gráfico
+                  chart.series[0].addPoint(
+                    [EIXO_X, childSnapshot.val()],
+                    true,
+                    false
+                  ); //apaga o ponto mais antigo do gráfico
+                }
+              });
+            });
+          db.ref("teste/solo")
+            .limitToLast(1)
+            .on("value", snapshot => {
+              var EIXO_X = new Date();
+              snapshot.forEach(childSnapshot => {
+                if (chart.series[1].data.length > 25) {
+                  //exibe 10 pontos na area do grafico
+                  chart.series[1].addPoint(
+                    [EIXO_X, childSnapshot.val()],
+                    true,
+                    true
+                  );
+                } else {
+                  chart.series[1].addPoint(
+                    [EIXO_X, childSnapshot.val()],
+                    true,
+                    false
+                  ); //apaga o ponto mais antigo do gráfico
+                }
+              });
+            });
+        }
+        async function requestFB1() {
+          db.ref("teste/solo")
+            .limitToLast(1)
+            .on("value", snapshot => {
+              var EIXO_X = new Date();
+              snapshot.forEach(childSnapshot => {
+                if (chart.series[0].data.length > 25) {
+                  //exibe 10 pontos na area do grafico
+                  spline.series[0].addPoint(
+                    [EIXO_X, childSnapshot.val()],
+                    true,
+                    true
+                  );
+                } else {
+                  spline.series[0].addPoint(
+                    [EIXO_X, childSnapshot.val()],
+                    true,
+                    false
+                  ); //apaga o ponto mais antigo do gráfico
+                }
+              });
+            });
+           db.ref("teste/solo")
+            .limitToLast(1)
+            .on("value", snapshot => {
+              var EIXO_X = new Date();
+              snapshot.forEach(childSnapshot => {
+                if (chart.series[1].data.length > 25) {
+                  //exibe 10 pontos na area do grafico
+                  spline.series[1].addPoint(
+                    [EIXO_X, childSnapshot.val()],
+                    true,
+                    true
+                  );
+                } else {
+                  spline.series[1].addPoint(
+                    [EIXO_X, childSnapshot.val()],
+                    true,
+                    false
+                  ); //apaga o ponto mais antigo do gráfico
                 }
               });
             });
