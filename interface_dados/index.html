@@ -4,16 +4,34 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />  
     <title>Detectando na Água</title>
-
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="style.css" />
   </head>
   <body>
-    <h2>Gráficos de condutividade</h2>
+    <h2 id="header">Gráficos de condutividade</h2>
     <div id="chart" class="container"></div>
     <div id="spline" class="container"></div>
-
+    <div id="tabela">
+        <table>
+          <tr>
+            <th>valor 1</th>
+            <th>valor 2</th>
+            <th>valor 3</th>
+            <th>Data</th>
+            <th>Horario</th>
+          </tr>
+          <tr>
+            <td>dado1</td>
+            <td>dado2</td>
+            <td>dado3</td>
+            <td><span id="data"></span></td>
+            <td><span id="horario"></span></td>
+          </tr>
+        </table>
+    
+    </div>
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
@@ -132,26 +150,41 @@
           },
           credits: { enabled: false }
         });
-
+        async function data_hora(){
+          var dia,mes,ano,hora,minuto,segundo;
+          
+          dia = db.ref("time/dia");
+          mes = db.ref("time/mes");
+          ano = db.ref("time/ano");
+          hora = db.ref("time/hora");
+          minuto = db.ref("time/minuto");
+          segundo = db.ref("time/segundo");
+          
+          dia.on('value',function(snapshot){
+            document.getElementById('data').innerText = snapshot.val() + "/";
+          },function(errorObject){
+            alert("The read failed:"+errorObject.code);
+          });
+          mes.on('value',function(snapshot){
+            document.getElementById('data').innerText = snapshot.val() + "/";
+          },function(errorObject){
+            alert("The read failed:"+errorObject.code);
+          });
+          ano.on('value',function(snapshot){
+            document.getElementById('data').innerText = snapshot.val();
+          },function(errorObject){
+            alert("The read failed:"+errorObject.code);
+          }); 
+        }
         async function requestFB() {
-          db.ref("teste/solo")
-            .limitToLast(1)
-            .on("value", snapshot => {
+          db.ref("teste/solo").limitToLast(1).on("value", snapshot => {
               var EIXO_X = new Date();
               snapshot.forEach(childSnapshot => {
                 if (chart.series[0].data.length > 25) {
                   //exibe 10 pontos na area do grafico
-                  chart.series[0].addPoint(
-                    [EIXO_X, childSnapshot.val()],
-                    true,
-                    true
-                  );
+                  chart.series[0].addPoint([EIXO_X, childSnapshot.val()],true,true);
                 } else {
-                  chart.series[0].addPoint(
-                    [EIXO_X, childSnapshot.val()],
-                    true,
-                    false
-                  ); //apaga o ponto mais antigo do gráfico
+                  chart.series[0].addPoint([EIXO_X, childSnapshot.val()],true,false); //apaga o ponto mais antigo do gráfico
                 }
               });
             });
