@@ -51,4 +51,5 @@ void loop() {
   Firebase.setInt("time/dia",dataehora.day);
   Firebase.setInt("time/mes",dataehora.month);
   Firebase.setInt("time/ano",dataehora.year);
+  Firebase.pushInt("teste/solo",random(100));
 }
