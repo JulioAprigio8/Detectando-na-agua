@@ -15,31 +15,8 @@
   <body>
     <h2 id="header">Gráficos de condutividade</h2>
     <div id="chart" class="container"></div>
-    <div id="spline" class="container"></div>
-    <div id="tabela">
-      <table>
-        <tr>
-          <th>valor 1</th>
-          <th>valor 2</th>
-          <th>valor 3</th>
-          <th>Data</th>
-          <th>Horario</th>
-        </tr>
-        <tr>
-          <td>dado1</td>
-          <td>dado2</td>
-          <td>dado3</td>
-          <td>
-            <span id="data1"></span><span id="data2"></span
-            ><span id="data3"></span>
-          </td>
-          <td>
-            <span id="horario1"></span><span id="horario2"></span
-            ><span id="horario3"></span>
-          </td>
-        </tr>
-      </table>
-    </div>
+    <div id="spline3" class="container"></div>
+    
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
@@ -80,15 +57,33 @@
           },
           series: [
             {
+              color: "#059e5a",
+              showInLegend: true,
+              name: "Siemens(uS/cm)",
+              data: [0, 1] //parte responsavel por plotar pontos(manualmente)dos dados
+            },
+            {
               color: "#059e8a",
               showInLegend: true,
-              name: "Umidade do Solo",
+              name: "TDS (PPM)",
+              data: [0, 1] //parte responsavel por plotar pontos(manualmente)dos dados
+            },
+            {
+              color: "#059e9a",
+              showInLegend: true,
+              name: "Tensão(V)",
+              data: [0, 1] //parte responsavel por plotar pontos(manualmente)dos dados
+            },
+            {
+              color: "#059e7a",
+              showInLegend: true,
+              name: "Resistencia(Ohms)",
               data: [0, 1] //parte responsavel por plotar pontos(manualmente)dos dados
             },
             {
               color: "#9B111E",
               showInLegend: true,
-              name: "Temperatura do Ar",
+              name: "Temperatura",
               data: [0, 1]
             }
           ],
@@ -109,134 +104,17 @@
             dateTimeLabelFormats: { second: "%H:%M:%S" }
           },
           yAxis: {
-            title: { text: "Umidade(%) e Temperatura(°C)" }
+            title: { text: "Siemens(uS/cm),TDS (PPM) e Temperatura(°C)" }
           },
           credits: { enabled: false }
         });
-        spline = new Highcharts.Chart({
-          //Estrutura responsavel por determinar os dados do gráfico
-          chart: {
-            type: "spline",
-            renderTo: "spline",
-            scrollablePlotArea: {
-              minWidth: 600,
-              scrollPositionX: 1
-            }
-          },
-          title: { text: "Gráfico 02" },
-          events: {
-            load: requestFB1()
-          },
-          series: [
-            {
-              color: "#059e8a",
-              showInLegend: true,
-              name: "Umidade do Solo",
-              data: [0, 1] //parte responsavel por plotar pontos(manualmente)dos dados
-            },
-            {
-              color: "#9B111E",
-              showInLegend: true,
-              name: "Temperatura do Ar",
-              data: [0, 1]
-            }
-          ],
-          plotOptions: {
-            spline: {
-              lineWidth: 4,
-              states: {
-                hover: {
-                  lineWidth: 5
-                }
-              },
-              animation: true,
-              dataLabels: { enabled: true }
-            }
-          },
-          xAxis: {
-            type: "datetime",
-            dateTimeLabelFormats: { second: "%H:%M:%S" },
-            labels: {
-              overflow: "justify"
-            }
-          },
-          yAxis: {
-            title: { text: "Umidade(%) e Temperatura(°C)" },
-            minorGridLineWidth: 0,
-            gridLineWidth: 0,
-            alternateGridColor: null
-          },
-          credits: { enabled: false }
-        });
+       
 
-        var dia, mes, ano, hora, minuto, segundo;
-
-        dia = db.ref("time/dia");
-        mes = db.ref("time/mes");
-        ano = db.ref("time/ano");
-        hora = db.ref("time/hora");
-        minuto = db.ref("time/minuto");
-        segundo = db.ref("time/segundo");
-
-        dia.on(
-          "value",
-          function(snapshot) {
-            document.getElementById("data1").innerText = snapshot.val() + "/";
-          },
-          function(errorObject) {
-            alert("The read failed:" + errorObject.code);
-          }
-        );
-        mes.on(
-          "value",
-          function(snapshot) {
-            document.getElementById("data2").innerText = snapshot.val() + "/";
-          },
-          function(errorObject) {
-            alert("The read failed:" + errorObject.code);
-          }
-        );
-        ano.on(
-          "value",
-          function(snapshot) {
-            document.getElementById("data3").innerText = snapshot.val();
-          },
-          function(errorObject) {
-            alert("The read failed:" + errorObject.code);
-          }
-        );
-        hora.on(
-          "value",
-          function(snapshot) {
-            document.getElementById("horario1").innerText =
-              snapshot.val() + ":";
-          },
-          function(errorObject) {
-            alert("The read failed:" + errorObject.code);
-          }
-        );
-        minuto.on(
-          "value",
-          function(snapshot) {
-            document.getElementById("horario2").innerText =
-              snapshot.val() + ":";
-          },
-          function(errorObject) {
-            alert("The read failed:" + errorObject.code);
-          }
-        );
-        segundo.on(
-          "value",
-          function(snapshot) {
-            document.getElementById("horario3").innerText = snapshot.val();
-          },
-          function(errorObject) {
-            alert("The read failed:" + errorObject.code);
-          }
-        );
+        
+      
 
         async function requestFB() {
-          db.ref("teste/solo")
+          db.ref("tensão")
             .limitToLast(1)
             .on("value", snapshot => {
               var EIXO_X = new Date();
@@ -257,7 +135,70 @@
                 }
               });
             });
-          db.ref("teste/solo")
+          db.ref("resistencia")
+            .limitToLast(1)
+            .on("value", snapshot => {
+              var EIXO_X = new Date();
+              snapshot.forEach(childSnapshot => {
+                if (chart.series[1].data.length > 25) {
+                  //exibe 10 pontos na area do grafico
+                  chart.series[1].addPoint(
+                    [EIXO_X, childSnapshot.val()],
+                    true,
+                    true
+                  );
+                } else {
+                  chart.series[1].addPoint(
+                    [EIXO_X, childSnapshot.val()],
+                    true,
+                    false
+                  ); //apaga o ponto mais antigo do gráfico
+                }
+              });
+            });
+          db.ref("siemens")
+            .limitToLast(1)
+            .on("value", snapshot => {
+              var EIXO_X = new Date();
+              snapshot.forEach(childSnapshot => {
+                if (chart.series[1].data.length > 25) {
+                  //exibe 10 pontos na area do grafico
+                  chart.series[1].addPoint(
+                    [EIXO_X, childSnapshot.val()],
+                    true,
+                    true
+                  );
+                } else {
+                  chart.series[1].addPoint(
+                    [EIXO_X, childSnapshot.val()],
+                    true,
+                    false
+                  ); //apaga o ponto mais antigo do gráfico
+                }
+              });
+            });
+          db.ref("tds")
+            .limitToLast(1)
+            .on("value", snapshot => {
+              var EIXO_X = new Date();
+              snapshot.forEach(childSnapshot => {
+                if (chart.series[1].data.length > 25) {
+                  //exibe 10 pontos na area do grafico
+                  chart.series[1].addPoint(
+                    [EIXO_X, childSnapshot.val()],
+                    true,
+                    true
+                  );
+                } else {
+                  chart.series[1].addPoint(
+                    [EIXO_X, childSnapshot.val()],
+                    true,
+                    false
+                  ); //apaga o ponto mais antigo do gráfico
+                }
+              });
+            });
+          db.ref("temperatura")
             .limitToLast(1)
             .on("value", snapshot => {
               var EIXO_X = new Date();
@@ -279,50 +220,7 @@
               });
             });
         }
-        async function requestFB1() {
-          db.ref("teste/solo")
-            .limitToLast(1)
-            .on("value", snapshot => {
-              var EIXO_X = new Date();
-              snapshot.forEach(childSnapshot => {
-                if (chart.series[0].data.length > 25) {
-                  //exibe 10 pontos na area do grafico
-                  spline.series[0].addPoint(
-                    [EIXO_X, childSnapshot.val()],
-                    true,
-                    true
-                  );
-                } else {
-                  spline.series[0].addPoint(
-                    [EIXO_X, childSnapshot.val()],
-                    true,
-                    false
-                  ); //apaga o ponto mais antigo do gráfico
-                }
-              });
-            });
-           db.ref("teste/solo")
-            .limitToLast(1)
-            .on("value", snapshot => {
-              var EIXO_X = new Date();
-              snapshot.forEach(childSnapshot => {
-                if (chart.series[1].data.length > 25) {
-                  //exibe 10 pontos na area do grafico
-                  spline.series[1].addPoint(
-                    [EIXO_X, childSnapshot.val()],
-                    true,
-                    true
-                  );
-                } else {
-                  spline.series[1].addPoint(
-                    [EIXO_X, childSnapshot.val()],
-                    true,
-                    false
-                  ); //apaga o ponto mais antigo do gráfico
-                }
-              });
-            });
-        }
+      
       });
     </script>
   </body>
