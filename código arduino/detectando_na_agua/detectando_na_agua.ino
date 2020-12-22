@@ -1,10 +1,19 @@
-#include <Wire.h>
-#include <DS3231.h>
 #include <ESP8266WiFi.h>
 #include <FirebaseArduino.h>
+#include <MCP3008.h>
+#include<SPI.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
-DS3231 rtc;              //Criação do objeto do tipo DS3231
-RTCDateTime dataehora;   //Criação do objeto do tipo RTCDateTime
+// Data wire is plugged into digital pin 2 on the Arduino
+#define ONE_WIRE_BUS D3
+
+// Setup a oneWire instance to communicate with any OneWire device
+OneWire oneWire(ONE_WIRE_BUS);
+
+// Pass oneWire reference to DallasTemperature library
+DallasTemperature sensors(&oneWire);
+
 //Pinos do NodeMCU: SDA => D1 SCL => D2
 // Configure com suas credenciais do FireBase
 // Credencial está em configuração do projeto, contas e serviços.
@@ -13,12 +22,23 @@ RTCDateTime dataehora;   //Criação do objeto do tipo RTCDateTime
 #define WIFI_SSID "nome da sua rede wifi" //nome da sua rede wifi
 #define WIFI_PASSWORD "senha da sua rede wifi" //senha da sua rede wifi
 
+// Definindo pinos do ADC externo
+#define CS_PIN D5
+#define CLOCK_PIN D8
+#define MOSI_PIN D6
+#define MISO_PIN D7
+
 WiFiServer server(80);// Porta 80 do webserver
+
+MCP3008 adc(CLOCK_PIN, MOSI_PIN, MISO_PIN, CS_PIN);
+const float ArduinoVoltage = 3.3; // CHANGE THIS FOR 3.3v Arduinos
+const float ArduinoResolution = ArduinoVoltage / 1024;
+const float resistorValue = 10000.0;
+int threshold = 3;
 
 void setup() {
   Serial.begin(9600);
-  rtc.begin();            //Inicialização do RTC DS3231
-  rtc.setDateTime(__DATE__, __TIME__);   //Configurando valores iniciais do RTC DS3231
+  sensors.begin();  // Start up the library
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("conectando");
   while (WiFi.status() != WL_CONNECTED) {
@@ -33,23 +53,47 @@ void setup() {
 }
 
 void loop() {
-  dataehora = rtc.getDateTime();     //Atribuindo valores instantâneos de data e hora à instância dataehora
-//  Serial.print(dataehora.year);     //Imprimindo o Ano
-//  Serial.print("-");
-//  Serial.print(dataehora.month);    //Imprimindo o Mês
-//  Serial.print("-");
-//  Serial.print(dataehora.day);      //Imprimindo o Dia
-//  Serial.print(" ");
-//  Serial.print(dataehora.hour);     //Imprimindo a Hora
-//  Serial.print(":");
-//  Serial.print(dataehora.minute);   //Imprimindo o Minuto
-//  Serial.print(":");
-//  Serial.println(dataehora.second);   //Imprimindo o Segundo
-  Firebase.setInt("time/hora",dataehora.hour);
-  Firebase.setInt("time/minuto",dataehora.minute);
-  Firebase.setInt("time/segundo",dataehora.second);
-  Firebase.setInt("time/dia",dataehora.day);
-  Firebase.setInt("time/mes",dataehora.month);
-  Firebase.setInt("time/ano",dataehora.year);
-  Firebase.pushInt("teste/solo",random(100));
+  int inputPin = adc.readADC(1);
+  int ouputPin = adc.readADC(0);
+  
+  int analogValue = 0;
+  int oldAnalogValue = 1000;
+  float returnVoltage = 0.0;
+  float resistance = 0.0;
+  double Siemens;
+  float TDS = 0.0;
+  while (((oldAnalogValue - analogValue) > threshold) || (oldAnalogValue < 50))
+  {
+    oldAnalogValue = analogValue;
+    delay(10); // allow ringing to stop
+    analogValue = inputPin ;
+  }
+  Serial.print("Return voltage = ");
+  returnVoltage = analogValue * ArduinoResolution;
+  Serial.print(returnVoltage);
+
+  Serial.println(" volts");
+  Serial.print("That works out to a resistance of ");
+  resistance = ((3.3 * resistorValue) / returnVoltage) - resistorValue;
+  Serial.print(resistance);
+  Serial.println(" Ohms.");
+  Serial.print("Which works out to a conductivity of ");
+  Siemens = 1.0 / (resistance / 1000000);
+  Serial.print(Siemens);
+  Serial.println(" microSiemens.");
+  Serial.print("Total Dissolved Solids are on the order of ");
+  TDS = 500 * (Siemens / 1000);
+  Serial.print(TDS);
+  Serial.println(" PPM.");
+  sensors.requestTemperatures();
+   //print the temperature in Celsius
+  Serial.print("Temperature: ");
+  Serial.print(sensors.getTempCByIndex(0));
+  Serial.print((char)176);//shows degrees character
+  Serial.print("C  |  ");
+  Firebase.pushInt("tensão", returnVoltage);
+  Firebase.pushInt("resistencia", resistance);
+  Firebase.pushInt("siemens", Siemens);
+  Firebase.pushInt("tds", TDS);
+  Firebase.pushInt("temperatura", sensors.getTempCByIndex(0));
 }
